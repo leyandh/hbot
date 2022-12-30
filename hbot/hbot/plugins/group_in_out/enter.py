@@ -13,11 +13,14 @@
 
 # n=[1]
 import requests
-class setu:
-    def get_setu(self,down=False)->str:
-        print('url') 
-        return 'url'
-
-i=setu().get_setu
-i()
-
+head = {
+                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.54'
+                }
+params = {
+    
+    "size": 'original',
+    "tag":  ['制服','ntr'],
+    "r18": 1,
+}
+url = requests.get('https://api.lolicon.app/setu/v2', headers=head, params=params).json()
+print(url)
