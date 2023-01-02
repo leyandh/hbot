@@ -1,17 +1,23 @@
 from nonebot.adapters.onebot.v11 import Bot, Event, MessageSegment
-from nonebot.plugin import on_regex
+from nonebot.plugin import on_regex,on_command
 import requests
 from PIL import Image
 import os
 import re
 import time
 from typing import Union
-
 import time
+from nonebot.permission import SUPERUSER
+from nonebot.params import CommandArg
+r18:int=0
+group_r18 = []
+
 class do:
     def __init__(self) -> None:
         pass
-    def get_setu(self, r18:int=1, tags:Union[str,list]='', down=False)->str:
+    def get_setu(self , tags:Union[str,list]='', down=False)->str:
+        if len(tags)>3:
+            return 'tag最多三个哟~'
 
         head = {
                 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.54'
@@ -51,35 +57,37 @@ class do:
 
 
 Setu = on_regex("^涩图")
-down_setu = on_regex("^下载涩图")
+down_setu = on_command("下载涩图", permission= SUPERUSER)
 
 @Setu.handle()
 async def _(bot:Bot,event:Event):
     msg = event.get_plaintext()
-    res = re.search(r"^涩图(tag.*){0,3}\*{0,1}([0-9]*)$", msg)
+    res = re.search(r"^涩图(tag.*){0,1}", msg)
     if res is not None and res!='':
-        if res[2] !='':
-            num = int(res[2])
-        else : num=1
-        if  0 < num <= 10:
-            if res[1] is not None:
-                tag = res[1].replace('tag',',')[1:].split(",")
-            else:
-                tag=[]
-            setu = do()
-            for j in range(num):
-                i =  setu.get_setu(tags=tag)
-                if i =='未找到tag':
-                    await Setu.send(MessageSegment.text(i), at_sender=True)
-                else:
-                    await Setu.send(MessageSegment.image(i), at_sender=True)
-                time.sleep(0.1)
+        # if res[2] !='':
+        #     num = int(res[2])
+        # else : num=1
+        # if  0 < num <= 10:
+        if res[1] is not None:
+            tag:list = res[1].replace('tag',',')[1:].split(",")
+        else:
+            tag=[]
+        setu = do()
+        # for j in range(num):
+        i =  setu.get_setu(tags=tag)
+        if i =='未找到tag' or i=='tag最多三个哟~':
+            await Setu.send(MessageSegment.text(i), at_sender=True)
+
+        else:
+            await Setu.send(MessageSegment.image(i), at_sender=True)
+        time.sleep(0.1)
+
 @down_setu.handle()
 async def _(bot:Bot,event:Event):
     msg = event.get_plaintext()
     res = re.search(r"^下载涩图\*([0-9]*)$", msg)
     if res is not None:
-        await Setu.send(MessageSegment.text('开始下载...'), at_sender=True)
+        await Setu.send(message =MessageSegment.text('开始下载...'), at_sender=True)
         num = int(res[1])
         good = 0
         bad = 0
@@ -91,5 +99,5 @@ async def _(bot:Bot,event:Event):
             if i =='bad':
                 bad+=1
         message = f"下载成功{good}个，失败{bad}个"
-        await Setu.send(MessageSegment.text(message), at_sender=True)
+        await Setu.send(message = MessageSegment.text(message), at_sender=True)
 
